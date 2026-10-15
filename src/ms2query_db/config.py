@@ -808,7 +808,7 @@ class QueryConfig:
     references and negative queries search negative references. ``cross_mode``
     is reserved for future support of comparisons across ion modes.
 
-    Consensus is optional. Setting ``aggregation_metho=None`` returns ordinary
+    Consensus is optional. Setting ``aggregation_method=None`` returns ordinary
     candidate-ranking results. ``"medoid"`` selects a real candidate compound
     that is chemically central among highly supported candidates.
     ``"centroid"`` constructs a weighted fingerprint and performs a chemical
@@ -846,7 +846,7 @@ class QueryConfig:
         available. Primarily useful for evaluation.
     chemical_metric
         Chemical fingerprint similarity metric.
-    aggregation_metho
+    aggregation_method
         ``None``, ``"medoid"``, or ``"centroid"``.
     aggregation_weight_source
         Candidate score used for consensus weighting. ``"rf_quality"`` is the
@@ -896,7 +896,7 @@ class QueryConfig:
     compute_chemical_similarity: bool = False
     chemical_metric: str = "minmax"
 
-    aggregation_metho: str | None = None
+    aggregation_method: str | None = None
     aggregation_weight_source: str = "rf_quality"
     aggregation_weight_power: float = 2.0
 
@@ -987,7 +987,7 @@ class QueryConfig:
             self.compute_chemical_similarity,
             bool,
         ):
-            raise ValueError(
+            raise TypeError(
                 "compute_chemical_similarity must be a boolean."
             )
 
@@ -1000,12 +1000,12 @@ class QueryConfig:
             )
 
         if (
-            self.aggregation_metho is not None
-            and self.aggregation_metho
+            self.aggregation_method is not None
+            and self.aggregation_method
             not in AGGREGATION_METHODS
         ):
             raise ValueError(
-                "aggregation_metho must be None or one of "
+                "aggregation_method must be None or one of "
                 f"{AGGREGATION_METHODS}."
             )
 
@@ -1043,7 +1043,7 @@ class QueryConfig:
         )
 
         if (
-            self.aggregation_metho is not None
+            self.aggregation_method is not None
             and self.aggregation_weight_source in METHODS
             and self.aggregation_weight_source
             not in available_scores
@@ -1055,7 +1055,7 @@ class QueryConfig:
             )
 
         if (
-            self.aggregation_metho == "centroid"
+            self.aggregation_method == "centroid"
             and self.chemical_search_pool
             < self.aggregation_top_n
         ):
