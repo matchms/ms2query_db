@@ -330,51 +330,69 @@ class MS2DeepScoreEmbedder:
     ) -> Self:
         """Load an MS2DeepScore model file and create an embedder.
 
-        ``allow_legacy=False`` is intentionally the default.  If the installed
-        MS2DeepScore version cannot express a safe/legacy loading choice, the
-        method refuses to load implicitly and asks the caller to make the trust
-        decision explicit.
+        PyTorch ``.pt`` models use ``allow_legacy=False`` by default. If the
+        installed MS2DeepScore version cannot express a safe/legacy loading
+        choice, loading refuses to continue implicitly and asks the caller to
+        make the trust decision explicit. ONNX models are loaded through
+        ``SiameseSpectralModelONNX`` and do not use the legacy-PyTorch switch.
         """
         if not isinstance(allow_legacy, bool):
             raise TypeError("allow_legacy must be a boolean.")
-
-        from ms2deepscore import MS2DeepScore
-        from ms2deepscore.models import load_model
 
         model_path = Path(path).expanduser().resolve()
         if not model_path.is_file():
             raise FileNotFoundError(model_path)
 
-        load_parameters = _supported_keyword_arguments(
-            load_model,
-            {"allow_legacy": allow_legacy},
-        )
+        if model_path.suffix.lower() == ".onnx":
+            # ONNX is the preferred inference format in current MS2DeepScore.
+            # Loading it separately also avoids applying PyTorch's legacy-model
+            # trust switch to a format where that option does not apply.
+            from ms2deepscore import MS2DeepScoreONNX
+            from ms2deepscore.models import SiameseSpectralModelONNX
 
-        try:
-            loader_signature = inspect.signature(load_model).parameters
-        except (TypeError, ValueError):
-            loader_signature = {}
+            model = SiameseSpectralModelONNX(model_path)
+            scorer_kwargs = _supported_keyword_arguments(
+                MS2DeepScoreONNX,
+                {"progress_bar": False},
+            )
+            scorer = MS2DeepScoreONNX(
+                model,
+                **scorer_kwargs,
+            )
+        else:
+            from ms2deepscore import MS2DeepScore
+            from ms2deepscore.models import load_model
 
-        if "allow_legacy" not in loader_signature and not allow_legacy:
-            raise RuntimeError(
-                "The installed MS2DeepScore loader has no safe-first "
-                "allow_legacy option. Use a trusted model with "
-                "allow_legacy=True, or upgrade MS2DeepScore."
+            load_parameters = _supported_keyword_arguments(
+                load_model,
+                {"allow_legacy": allow_legacy},
             )
 
-        model = load_model(
-            model_path,
-            **load_parameters,
-        )
+            try:
+                loader_signature = inspect.signature(load_model).parameters
+            except (TypeError, ValueError):
+                loader_signature = {}
 
-        scorer_kwargs = _supported_keyword_arguments(
-            MS2DeepScore,
-            {"progress_bar": False},
-        )
-        scorer = MS2DeepScore(
-            model,
-            **scorer_kwargs,
-        )
+            if "allow_legacy" not in loader_signature and not allow_legacy:
+                raise RuntimeError(
+                    "The installed MS2DeepScore loader has no safe-first "
+                    "allow_legacy option. Use a trusted model with "
+                    "allow_legacy=True, or upgrade MS2DeepScore."
+                )
+
+            model = load_model(
+                model_path,
+                **load_parameters,
+            )
+
+            scorer_kwargs = _supported_keyword_arguments(
+                MS2DeepScore,
+                {"progress_bar": False},
+            )
+            scorer = MS2DeepScore(
+                model,
+                **scorer_kwargs,
+            )
 
         return cls(
             scorer,
