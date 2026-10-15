@@ -1,0 +1,100 @@
+inchikey,SMILES,Kingdom,Superclass,Class,Subclass
+AAAABHINRQIFEK-UHFFFAOYSA-N,C1CCCC(CC1)CCCCCNCCSS(=O)(=O)O,Organic compounds,Organic acids and derivatives,Organic thiosulfuric acids and derivatives,S-alkyl thiosulfates
+AAAACIDXVXFWLZ-UHFFFAOYSA-N,CC1=CC2=C(C3=C(CCC3)C(=O)O2)C(=C1)OC4C(C(C(C(O4)CO)O)O)O,Organic compounds,Organic oxygen compounds,Organooxygen compounds,Carbohydrates and carbohydrate conjugates
+AAAAKWWLSGEURG-UHFFFAOYSA-N,C1=CC(=CC(=C1)Br)C(=O)NCC(=O)NN=CC2=C(C=C(C=C2)O)O,Organic compounds,Benzenoids,Benzene and substituted derivatives,Benzoic acids and derivatives
+AAAAWQOPBUPWEV-UHFFFAOYSA-N,COC(=O)CC(C1=CC=CC=C1)C2=C(C=C(C3=C2OC(=CC3=O)C4=CC=CC=C4)O)O,Organic compounds,Phenylpropanoids and polyketides,Diarylheptanoids,Linear diarylheptanoids
+AAABMNXUOFPYQK-WMBKCNCTSA-N,CC1C(OC(CC1=C)(C(C(=O)NC2C3C(C(C(C(O3)CC(CO)OC)(C)C)OC)OCO2)O)OC)C,Organic compounds,Organoheterocyclic compounds,Pyranodioxins,
+AAACJXBPRRVSAV-UHFFFAOYSA-N,CC(=CC(=O)OC1C(=C)C2CCC3(C1(C2)CCC4C3(CCCC4(C)C(=O)O)C)O)C,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Diterpenoids
+AAACXXOAKLEEOX-UHFFFAOYSA-N,CCC(CC)C(=O)OCCl,Organic compounds,Lipids and lipid-like molecules,Fatty Acyls,Fatty acid esters
+AAADKYXUTOBAGS-UHFFFAOYSA-N,CC1(C2CCC1(C(=S)C2)C)C,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Monoterpenoids
+AAAFZMYJJHWUPN-MBMOQRBOSA-N,C(C1C(C(C(O1)OP(=O)(O)O)O)O)OP(=O)(O)O,Organic compounds,Organic oxygen compounds,Organooxygen compounds,Carbohydrates and carbohydrate conjugates
+AAAGKEAEOHPDBS-UHFFFAOYSA-N,CC1C(C2=C(C3=C(C(=CC(=C3)O)OC)C(=C2CO1)O)C4=C5C(C(OCC5=C(C6=C4C=C(C=C6OC)OC)O)C)O)O,Organic compounds,"Lignans, neolignans and related compounds",Arylnaphthalene lignans,
+AAAGYPLVPQGIIN-UHFFFAOYSA-N,CC1CN(C(=O)C2=C(C(=CC=C2)NC(=O)C3CC3)OC1CN(C)C(=O)NC4=CC=C(C=C4)F)C(C)CO,Organic compounds,Benzenoids,Benzene and substituted derivatives,N-phenylureas
+AAAHTAUQXADPPM-UHFFFAOYSA-N,CCC(C)CCCCCCCCC(=O)OCC(COP(=O)(O)OCC(COP(=O)(O)OCC(COC(=O)CCCCCCCCCCCCCCCCCC(C)C)OC(=O)CCCCCCCCC(C)C)O)OC(=O)CCCCCCCCCCCCCCCCC(C)C,Organic compounds,Lipids and lipid-like molecules,Glycerophospholipids,Glycerophosphoglycerophosphoglycerols
+AAAHUMSMAVFIEC-UHFFFAOYSA-N,C1C2CN(CC1C3=CC=CC(=O)N3C2)C(=O)C(C4=CC=CC=C4)N5C=NN=N5,Organic compounds,Alkaloids and derivatives,Lupin alkaloids,Cytisine and derivatives
+AAAIMZMBCBBTQL-UHFFFAOYSA-N,C1=CC=C2C(=C1)C(=CC(=N2)C(Cl)(Cl)Cl)Cl,Organic compounds,Organoheterocyclic compounds,Quinolines and derivatives,Haloquinolines
+AAAIOLZUQZJCPR-FPODKLOTSA-N,CCCCCCCCCCCCCCCC=C1C(C(=O)O1)CCCCCCCCCCCCCCC,Organic compounds,Organoheterocyclic compounds,Lactones,Beta propiolactones
+AAAIZLQILBFRTJ-UHFFFAOYSA-N,CCCCCCCCCCCCCCCOC(=O)C,Organic compounds,Lipids and lipid-like molecules,Fatty Acyls,Fatty alcohol esters
+AAAJIKSEEYYMOW-UHFFFAOYSA-N,CC1=CC2=C(C=C1)N=C3CCCCC3=C2NCC(C)C,Organic compounds,Organoheterocyclic compounds,Quinolines and derivatives,Benzoquinolines
+AAAKMEGSCBCTHX-UHFFFAOYSA-N,CC(C=CC=C(C)C)C1(CC=C2C1(CCC3(C2CCC4C3(CCC(C4(C)C)O)C)O)C)C,Organic compounds,Lipids and lipid-like molecules,Steroids and steroid derivatives,Cholestane steroids
+AAAKNWZKGIPFED-UHFFFAOYSA-N,CC1=CC2=C(C(C(=C(O2)N)C(=O)OC)C3=CN=CC=C3)C(=O)N1CC4=CC5=C(C=C4)OCO5,Organic compounds,Organoheterocyclic compounds,Pyranopyridines,
+AAAKRYIEEWIEMB-UHFFFAOYSA-N,CC(C)CCCC1CC(=O)NC(C(=O)NC(C(=O)NC(C(=O)NCCC(=O)N(C(C(=O)NC(C(=O)NC(C(=O)NC(C(=O)NC(C(=O)NC(C(=O)NC(C(=O)N(C(C(=O)O1)C(C)C)C)CCCN)CC2=CNC3=CC=CC=C32)CC(=O)N)CCC(=O)O)CCCN)CC(C)C)CC4=CC=CC=C4)C)CO)C(C(=O)N)O)CO,Organic compounds,Organic acids and derivatives,Peptidomimetics,Depsipeptides
+AAALJWLFINEDCQ-UHFFFAOYSA-N,CC(C)CC(=O)OC1C2C(CC(C2(COC(=O)C)O)O)C(=CO1)COC3C(C(C(C(O3)CO)O)O)OC(=O)C=CC4=CC=C(C=C4)O,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Terpene glycosides
+AAALKTDFGJLPNH-UHFFFAOYSA-N,CC1CC=CC2C(C(=C(C3C2(C(=O)C=CC(=O)C(C(=C1)C)OC(=O)C)C(=O)NC3CC4=CNC5=CC=CC=C54)C)C)O,Organic compounds,Organoheterocyclic compounds,Indoles and derivatives,Indoles
+AAALVYBICLMAMA-UHFFFAOYSA-N,C1=CC=C(C=C1)NC2=C(C=C3C(=C2)C(=O)NC3=O)NC4=CC=CC=C4,Organic compounds,Organoheterocyclic compounds,Isoindoles and derivatives,Isoindolines
+AAAMHDKNMUIHKQ-UHFFFAOYSA-N,CC1(CCCC1)CC2CCC34CCC2(C3)C=CC(=O)CCC5=CC(=C(C=C5)O)OCCC6=CC(=C(C=C6)O)C7CC(=O)C8=C(CC#CC9=C7C=C(CSSC4)C(=C9)C(N)N)NC=C8,Organic compounds,Organic oxygen compounds,Organooxygen compounds,Carbonyl compounds
+AAAMJICHKUQUOZ-UHFFFAOYSA-N,C(C1C(C(C(C(O1)O)OS(=O)(=O)O)OSO)O)O,Organic compounds,Organic oxygen compounds,Organooxygen compounds,Carbohydrates and carbohydrate conjugates
+AAANZTDKTFGJLZ-UHFFFAOYSA-N,CC(=CCC1=C(C=C2C(=C1O)C(=O)C3=C(C=CC(=C3O2)O)O)OC)C,Organic compounds,Organoheterocyclic compounds,Benzopyrans,1-benzopyrans
+AAAOYRYYYQBEKQ-UHFFFAOYSA-N,CC1=C(C=C(C(=C1)OC(C)(C)C)C2(CO2)COC(=O)C)OC,Organic compounds,Benzenoids,Phenol ethers,Anisoles
+AAAPEXAGBQZUNL-UHFFFAOYSA-N,CCC1=CC(=O)OC2=C1C=CC(=C2)OCC(=O)NCCCCCC(=O)O,Organic compounds,Phenylpropanoids and polyketides,Coumarins and derivatives,
+AAAQFGUYHFJNHI-GOSISDBHSA-N,CCNC(=O)CC1C2=NN=C(N2C3=C(C=C(C=C3)OC)C(=N1)C4=CC=C(C=C4)Cl)C,Organic compounds,Organoheterocyclic compounds,Benzodiazepines,"1,4-benzodiazepines"
+AAAQKTZKLRYKHR-UHFFFAOYSA-N,C1=CC=C(C=C1)C(C2=CC=CC=C2)C3=CC=CC=C3,Organic compounds,Benzenoids,Triphenyl compounds,
+AAAQSJHHXMDZCO-UHFFFAOYSA-N,COC1=C(C2=C(C=C1)C3C(CO2)C4=CC(=C(C(=C4O3)OC)OC)O)OC,Organic compounds,Phenylpropanoids and polyketides,Isoflavonoids,Furanoisoflavonoids
+AAAQSMBDXOUJHS-ITQWLJMDSA-N,CCCCNC(=O)C(CC(C(CC1CCCCC1)N(C(C(=O)NC(=O)C(CC2=CC=CC=C2)N)SCC=C)S(=O)(=O)N3CCOCC3)O)C(C)C,Organic compounds,Organic acids and derivatives,Carboxylic acids and derivatives,"Amino acids, peptides, and analogues"
+AAAQYCLBMKRMEU-UHFFFAOYSA-N,CC1=CN=C(S1)NC(=O)CCCCC2CCSS2,Organic compounds,Organoheterocyclic compounds,Dithiolanes,Lipoamides
+AAARRLVSWMMLIL-UHFFFAOYSA-N,CCCCCCCCCCCCCCCCCCCC(=O)OC(COC(=O)CCCCCCCCCC=CCC=CCCCCC)COC(=O)CCCCCCC=CCC=CCC=CCC=CCC,Organic compounds,Lipids and lipid-like molecules,Glycerolipids,Triradylcglycerols
+AAARTTJTRNAYHQ-UHFFFAOYSA-N,CN1CCCC2C1CCCC2,Organic compounds,Organoheterocyclic compounds,Quinolidines,
+AAASCOYFECNVPP-UHFFFAOYSA-N,CC(C1=C(C(=NO1)C2=CC=C(C=C2)F)C(=O)NC3CC3)O,Organic compounds,Benzenoids,Benzene and substituted derivatives,Halobenzenes
+AAASNKNLMQBKFV-UHFFFAOYSA-N,COC1=C(C=C(C=C1)C2=C(C(=O)C3=C(O2)C=C(C=C3OC)OC)O)OC,Organic compounds,Phenylpropanoids and polyketides,Flavonoids,Flavones
+AAASSMYLGARPJZ-UHFFFAOYSA-N,CC1CCC2(C1(C3OC(=O)C(C2)(O3)CC=O)C)C,Organic compounds,Organoheterocyclic compounds,Lactones,
+AAASWLGRFCYBKX-UHFFFAOYSA-N,CC1CC(C2CC1C(C=C2C)C(C(=O)C=CC3=CC(=C(C=C3)O)OC)C(=O)C=CC4=CC(=C(C=C4)O)OC)C=C(C)C,Organic compounds,Phenylpropanoids and polyketides,Diarylheptanoids,Linear diarylheptanoids
+AAAULIDICJVAGC-UHFFFAOYSA-N,CCCCCC=CCC=CCCCCCCCC(=O)OCC(COC(=O)CCCCCC=CCC=CCC=CCC=CCC=CCC)OC(=O)CCCCCC=CCC=CCC=CCC=CCCCCC,Organic compounds,Lipids and lipid-like molecules,Glycerolipids,Triradylcglycerols
+AAAUQAJYMBAEDN-UHFFFAOYSA-N,CCCCCCCCC=CCC=CCC=CCCCC(=O)OC(COC(=O)CCCCCCC=CCC=CCC=CCC=CCC)COC(=O)CCCCCC=CCC=CCC=CCC=CCCCCC,Organic compounds,Lipids and lipid-like molecules,Glycerolipids,Triradylcglycerols
+AAAVAOYFDZROJH-UHFFFAOYSA-N,CCCCCCCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCCCCCCCCC)OC(=O)CCCCCCCCCCCCCCCCCCCCC(C)C,Organic compounds,Lipids and lipid-like molecules,Glycerolipids,Triradylcglycerols
+AAAVVDAKZZKRGS-UHFFFAOYSA-N,C1=CC(=CC(=C1)O)C2=NC(=NN2)NCC3=C(C=CC=C3Cl)F,Organic compounds,Organoheterocyclic compounds,Azoles,Triazoles
+AAAWJUMVTPNRDT-UHFFFAOYSA-N,CC(CCCO)CO,Organic compounds,Organic oxygen compounds,Organooxygen compounds,Alcohols and polyols
+AAAXMNYUNVCMCJ-UHFFFAOYSA-N,C(CI)CI,Organic compounds,Organohalogen compounds,Organoiodides,
+AAAXPVLZCNIFIX-UHFFFAOYSA-N,CC(=CC(=O)N1CCC(C1)N2C3=NC=NC(=C3N(C2=O)C4=CC=C(C=C4)OC5=CC=CC=C5)N)S,Organic compounds,Benzenoids,Benzene and substituted derivatives,Diphenylethers
+AAAYFFAGXKLUDV-UHFFFAOYSA-N,CC(C)CCCCCCCCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCCCCCC(C)C)OC(=O)CCCCCCCCCCCCCCC(C)C,Organic compounds,Lipids and lipid-like molecules,Glycerolipids,Triradylcglycerols
+AAAYIAAWJPLFJT-UHFFFAOYSA-N,CC1(CC2=C(CC1O)C=C3C=C(OC3=C2)C4=CC(=CC(=C4)OC)OC)C,Organic compounds,Phenylpropanoids and polyketides,2-arylbenzofuran flavonoids,
+AAAZGBHLLCPNHK-UHFFFAOYSA-N,C1=C(C(=C(C(=C1Br)O)Br)CC(=O)N)OC(=O)NCCCCN=C(N)N,Organic compounds,Benzenoids,Benzene and substituted derivatives,Phenylacetamides
+AAAZHHFCYMSXNC-UHFFFAOYSA-N,CC(C)C(C1=C(C(=C2C3=C1OC4(C(C3CC(O2)(C)C)C(C(=O)C4(C)C)(C)C)O)C(=O)C(C)C)O)C5=C(C(C(=O)C(C5=O)(C)C)(C)C)O,Organic compounds,Organoheterocyclic compounds,Benzopyrans,1-benzopyrans
+AAAZTDRWQNUXRP-UHFFFAOYSA-N,CC1(CCC2(CCC3(C(=CCC4C3(CC5C6C4(C(C[NH2+]5)(C(C(C6(C)CO)OC7C(C(C(CO7)O)O)O)O)CC8CC(=O)NC8)C)C)C2C1)C)C(=O)[O-])CO,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Triterpenoids
+AABAHUOKZNXNNN-UHFFFAOYSA-N,CC1(CN(CC2N1CCN(C2)C(=O)C3=CC=CC=C3)C(=O)C4=CC=C(C=C4)Cl)C,Organic compounds,Benzenoids,Benzene and substituted derivatives,Benzoic acids and derivatives
+AABBHSMFGKYLKE-SNAWJCMRSA-N,CC=CC(=O)OC(C)C,Organic compounds,Lipids and lipid-like molecules,Fatty Acyls,Fatty acid esters
+AABBIAOWKMFHJI-UHFFFAOYSA-N,C1=COC(=C1)CNC(=O)C2=CC=C(C=C2)N,Organic compounds,Benzenoids,Benzene and substituted derivatives,Benzoic acids and derivatives
+AABBYGNTCONFJV-UHFFFAOYSA-N,B(C1=CC(=CC=C1)COC2=C(C=CC(=C2)C)C(C)C)(O)O,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Monoterpenoids
+AABCUMMNELBAAF-UHFFFAOYSA-N,CN1C2CCN(C2C(=O)NCC1CCC(=O)NCC3=CC=CS3)CC4=CC=CS4,Organic compounds,Organoheterocyclic compounds,Diazepines,"1,4-diazepines"
+AABFCUNMRWDEPI-UHFFFAOYSA-N,CC(=O)OC1C(CC(O1)C(C(C)(C)OC(=O)C)OC(=O)C)C2CC=C3C2(CC(C4C3(C(C(C5C4(C=CC(=O)C5(C)C)C)O)O)C)O)C,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Triterpenoids
+AABFKSBKMOPMPR-UHFFFAOYSA-N,CC(=O)OC1CCC(C23C1(C(C(C(C2OC(=O)C)C(O3)(C)C)OC(=O)C)O)C)(C)O,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Sesquiterpenoids
+AABFPTARQKBOHY-UHFFFAOYSA-N,CC(=C)C(CC(C(=CC=NOCC1=C(C(=C(C(=C1F)F)F)F)F)C)Br)Br,Organic compounds,Benzenoids,Benzene and substituted derivatives,Halobenzenes
+AABFRDOEMUPTDQ-UHFFFAOYSA-N,CC(C)CCNC(=O)CCCNC(=O)N1CCC2=C(C1)NC3=CC=CC=C23,Organic compounds,Organoheterocyclic compounds,Indoles and derivatives,Pyridoindoles
+AABFWJDLCCDJJN-UHFFFAOYSA-N,COC1=CC2=C(C=C1)NC3=C2C=CN=C3C4=CC=CC5=CC=CC=C54,,Alkaloids and derivatives,Harmala alkaloids,
+AABFYPPWZWUMPE-UHFFFAOYSA-N,CC1CCC=C(O1)C,Organic compounds,Organoheterocyclic compounds,Oxacyclic compounds,
+AABGNJDJKXZYRE-UHFFFAOYSA-N,CC=CCC(C)C(C(C(=O)C(C(=O)C(C(C)O)N)(C(C)(C(C(=O)C(C)NC(=O)C(C)N)C(=O)C(CC(=C)C)NC(=O)C(CC(C)C)NC)C(=O)C(C(C)C)NC)C(C=O)(C(=O)CNC)N(C)C(=O)C(CC(C)C)NC(=O)C(CC(C)C)NC)NC)O,Organic compounds,Organic acids and derivatives,Carboxylic acids and derivatives,"Amino acids, peptides, and analogues"
+AABHSZUTAUSICN-HZJYTTRNSA-N,CCCCCC=CCC=CCCCCCCCC(=O)OCCCC1=CC2=C(C=C1)OC(=C2)C3=CC4=C(C=C3)OCO4,Organic compounds,Phenylpropanoids and polyketides,2-arylbenzofuran flavonoids,
+AABIHIQZAWJEDT-UHFFFAOYSA-N,CC12COC(OC1)(OC2)C3=CC=CC=C3,Organic compounds,Organic oxygen compounds,Organooxygen compounds,Ortho esters
+AABILZKQMVKFHP-LRBDFNDQSA-N,CC=C(C)C(=O)OC1CC[N+]2(C1C(=CC2)COC(=O)C(C(C)OC)(C(C)(C)O)O)[O-],Organic compounds,Alkaloids and derivatives,Unknown,
+AABJNGWHRMRAFV-UHFFFAOYSA-N,CCC(CC1CCCC(N1C)CC(C)O)O,Organic compounds,Organoheterocyclic compounds,Piperidines,
+AABJOSWGDPWIAI-UHFFFAOYSA-O,CC1C2C3CCCC4[NH+]3C(CCC4(CC5CCCC56CCCC6)O)CC=C2OC1=C7C(=C(C(=O)O7)C)OC,Organic compounds,Organoheterocyclic compounds,Quinolizidines,
+AABJQPAMCMMSDZ-UHFFFAOYSA-N,CC(C)C(CCCC1CC2=CC(=C(C=C2CN1C)OC)OC)(C#N)C3=CC(=C(C=C3)OC)OC,Organic compounds,Organoheterocyclic compounds,Tetrahydroisoquinolines,
+AABKGBWHOMKLGQ-UHFFFAOYSA-N,CC(=CCC1=C(C=C(C2=C1OC3=C4CC(C(OC4=C(C(=C3OC2=O)CC=C(C)C)O)(C)C)O)O)O)C,Organic compounds,Organoheterocyclic compounds,Benzopyrans,1-benzopyrans
+AABKOYXSWYMOPH-UHFFFAOYSA-N,CC(=C1CCC2=CC=C(C=C2)C3C=CC(CC3CC(=O)OC4C(C(OC5=C4C6=C(C=C5)C(=C(C(=O)O6)CCOCO)CO)(C)C7CCCC7)OC1=O)C8=CC=CC(=C8)CC9=CC=CC=C9)CO,Organic compounds,Phenylpropanoids and polyketides,Coumarins and derivatives,Pyranocoumarins
+AABLETICTANXER-UHFFFAOYSA-N,CC1=CC(C(CC1CC(=O)N2CCN(CC2)C3=CC=CC=N3)C(C)C)CNC(=O)COC,Organic compounds,Organoheterocyclic compounds,Diazinanes,Piperazines
+AABLHGPVOULICI-BRJGLHKUSA-N,CN1CCC23C4C(CCC2(C1CC5=C3C(=C(C=C5)O)O4)O)O,Organic compounds,Benzenoids,Phenanthrenes and derivatives,
+AABLMOXKAOXTGJ-UHFFFAOYSA-N,C1C2C(C3=CC=CC=C31)NC4=CC=CC=C24,Organic compounds,Organoheterocyclic compounds,Indoles and derivatives,Indolines
+AABLPJXYMMCJGJ-UHFFFAOYSA-N,C1CCC2=C(C1)C(=O)N(C2=O)C3=NC=NN3,Organic compounds,Organoheterocyclic compounds,Isoindoles and derivatives,Isoindolines
+AABNLFDMPVXYPJ-UHFFFAOYSA-N,C1CCC(CC1)N2CCOCC2C3=NC=C(N3)C4=CC=NC=C4,Organic compounds,Organic nitrogen compounds,Organonitrogen compounds,Amines
+AABORWYRSOFPIQ-UHFFFAOYSA-N,CCCCCCCCCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCCC)OC(=O)CCCCCCCCCCCCC(C)CC,Organic compounds,Lipids and lipid-like molecules,Glycerolipids,Triradylcglycerols
+AABPASRZAKHAIX-UHFFFAOYSA-N,CC(=CCC1=C(C=CC(=C1O)O)CCC(=O)O)CCC=C(C)CO,Organic compounds,Phenylpropanoids and polyketides,Phenylpropanoic acids,
+AABPUTJUVSPQIB-UHFFFAOYSA-N,CC12C3=C(CCN1C(=O)N(C2=O)C4=CC=CC(=C4)C(=O)NC5CCCCCCC5)C6=CC=CC=C6N3,Organic compounds,Organoheterocyclic compounds,Indoles and derivatives,Pyridoindoles
+AABQSYFDCUZGSR-UHFFFAOYSA-N,CC=C(C)C(=O)OC1CC2(CC(=O)C(CCC2=C1C(C)C)(C)OC(=O)C(=CC)C)C,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Sesquiterpenoids
+AABQVBFXZKSBOW-UHFFFAOYSA-N,CCOC(=O)C1=C(C=CC(=C1OCC(=O)OCCN2CCCCC2)C(C)C)C,Organic compounds,Benzenoids,Benzene and substituted derivatives,Phenoxyacetic acid derivatives
+AABQZJKAIGOMGB-UHFFFAOYSA-N,CCCCCCCCCCCCCCCCCCCCCC(=O)OC(COC(=O)CCCCCCCCCCCCCCCCC(C)C)COP(=O)(O)OCC(COP(=O)(O)OCC(COC(=O)CCCCCCC)OC(=O)CCCCCCCCCCCCCCC(C)C)O,Organic compounds,Lipids and lipid-like molecules,Glycerophospholipids,Glycerophosphoglycerophosphoglycerols
+AABRBTYEOGHULF-UHFFFAOYSA-N,COC1=CC=C(C=C1)S(=O)(=O)NNS(=O)(=O)C2=CC=CC=C2,Organic compounds,Benzenoids,Benzene and substituted derivatives,Benzenesulfonamides
+AABSYOQYJYBHOJ-UHFFFAOYSA-N,CC=C(C)C(=O)OC1CC2CC(C(C1)N2C)O,Organic compounds,Alkaloids and derivatives,Tropane alkaloids,
+AABSZBMLGKTAOK-UHFFFAOYSA-N,CC1=CC(=CC2=C1OC(CC2)(C)CCC=C(C)CCC=C(C)C(=O)O)OC,Organic compounds,Lipids and lipid-like molecules,Prenol lipids,Monoterpenoids
+AABTWRKUKUPMJG-UHFFFAOYSA-N,CC1=CC(=CO1)C,Organic compounds,Organoheterocyclic compounds,Heteroaromatic compounds,
+AABUHSBGEIUSRJ-UHFFFAOYSA-N,CC(=O)NC1=CC=C(C=C1)NC(=O)C=CC2=CC=CC=C2,,Phenylpropanoids and polyketides,Cinnamic acids and derivatives,Cinnamic acid amides
+AABUKWVVUWBZCS-UHFFFAOYSA-N,C1=CC=C(C=C1)C2=C(C(=O)OC3=C2C=CC(=C3)O)C4=CC=CC=C4,,Phenylpropanoids and polyketides,Neoflavonoids,Neoflavones
+AABUNZBAERLSJP-IMJSIDKUSA-N,COCC(C(C(=O)O)N)O,Organic compounds,Organic acids and derivatives,Carboxylic acids and derivatives,"Amino acids, peptides, and analogues"
+AABUYRZFPZHURP-UHFFFAOYSA-N,C1=CC=C(C=C1)C=CCC2=C(C=C(C=C2)O)O,Organic compounds,Phenylpropanoids and polyketides,"Linear 1,3-diarylpropanoids",Cinnamylphenols
+AABVSYKHNFSGOL-UHFFFAOYSA-N,CCOC1=C(C=CC(=C1)C=NNC(=S)N)OC(=O)C2=C(C=C(C=C2)Cl)Cl,Organic compounds,Phenylpropanoids and polyketides,Depsides and depsidones,
+AABWXKZJSNWRSH-UHFFFAOYSA-N,CCC1CCC(=C2C(=O)C(OC2=O)C)O1,Organic compounds,Organoheterocyclic compounds,Lactones,Gamma butyrolactones
+AABWZSYWURRATF-UHFFFAOYSA-N,CC(C)CCCCCCCCCCCCCCCCCCCCC(=O)OC(COC(=O)CCCCCCCCC(C)C)COP(=O)(O)OCC(COP(=O)(O)OCC(COC(=O)CCCCCCCCCCCCCCC(C)C)OC(=O)CCCCCCCCCC(C)C)O,Organic compounds,Lipids and lipid-like molecules,Glycerophospholipids,Glycerophosphoglycerophosphoglycerols
+AABXIEHINNPFGA-UHFFFAOYSA-N,COC1=CC(=CC(=C1)NC(=O)COC2=CC3=C(C=C2)C=CC(=O)O3)OC,Organic compounds,Phenylpropanoids and polyketides,Coumarins and derivatives,
+AABXRMHVHPQKKP-UHFFFAOYSA-N,CCCCON1C(=O)C2=C3C(=C(C=C2)OC)C=CC=C3C1=O,Organic compounds,Organoheterocyclic compounds,Isoquinolines and derivatives,Isoquinolones and derivatives
+AABYCBJQCOPZML-UHFFFAOYSA-N,C1CS(=O)(=O)CCN1C2=CC=CC(=C2)N,Organic compounds,Organoheterocyclic compounds,Thiazinanes,Thiomorpholines
+AABYHXILLYTODR-UHFFFAOYSA-N,CC1=CC=C(O1)C(=O)C=CC2=C(C=CC(=C2)OC)OC,Organic compounds,Benzenoids,Phenol ethers,Anisoles
+AABYTNPBQJJJLW-UHFFFAOYSA-N,C1=CC=C(C(=C1)C2=NNC(=S)N2N=CC3=CC(=CC=C3)Br)F,Organic compounds,Organoheterocyclic compounds,Azoles,Triazoles
+AABZWWBXDMYGEW-UHFFFAOYSA-N,CCC=CCC1C(C=CC1=O)CCCCCCCC(=O)OCC(COC2C(C(C(C(O2)CO)O)O)O)O,Organic compounds,Lipids and lipid-like molecules,Fatty Acyls,Eicosanoids
