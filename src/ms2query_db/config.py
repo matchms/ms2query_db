@@ -41,17 +41,17 @@ IONMODE_MATCHING_MODES = (
     "cross_mode",
 )
 
-CONSENSUS_METHODS = (
+AGGREGATION_METHODS = (
     "medoid",
     "centroid",
 )
 
-CONSENSUS_WEIGHT_SOURCES = (
+AGGREGATION_WEIGHT_SOURCES = (
     "rf_quality",
     *METHODS,
 )
 
-CONSENSUS_SELECTION_METHODS = (
+AGGREGATION_SELECTION_METHODS = (
     "top_n",
     "score_delta",
 )
@@ -808,7 +808,7 @@ class QueryConfig:
     references and negative queries search negative references. ``cross_mode``
     is reserved for future support of comparisons across ion modes.
 
-    Consensus is optional. Setting ``consensus_method=None`` returns ordinary
+    Consensus is optional. Setting ``aggregation_metho=None`` returns ordinary
     candidate-ranking results. ``"medoid"`` selects a real candidate compound
     that is chemically central among highly supported candidates.
     ``"centroid"`` constructs a weighted fingerprint and performs a chemical
@@ -846,24 +846,24 @@ class QueryConfig:
         available. Primarily useful for evaluation.
     chemical_metric
         Chemical fingerprint similarity metric.
-    consensus_method
+    aggregation_metho
         ``None``, ``"medoid"``, or ``"centroid"``.
-    consensus_weight_source
+    aggregation_weight_source
         Candidate score used for consensus weighting. ``"rf_quality"`` is the
         recommended source when an RF reranker is available.
-    consensus_weight_power
+    aggregation_weight_power
         Exponent applied to non-negative candidate weights before consensus.
         The current default is 2.0.
-    consensus_selection
+    aggregation_selection
         Candidate subset rule used before consensus. ``"top_n"`` keeps the
         highest-scoring candidates and ``"score_delta"`` retains candidates
-        within ``consensus_score_delta`` of the best score.
-    consensus_top_n
+        within ``aggregation_score_delta`` of the best score.
+    aggregation_top_n
         Maximum candidate count for top-N consensus.
-    consensus_score_delta
+    aggregation_score_delta
         Maximum score difference from the best candidate when using
-        ``consensus_selection="score_delta"``.
-    consensus_pool
+        ``aggregation_selection="score_delta"``.
+    chemical_search_pool
         Chemical ANN pool size used by centroid/database consensus.
     exact_chemical_search
         Use exact full-library chemical search instead of chemical ANN.
@@ -896,15 +896,15 @@ class QueryConfig:
     compute_chemical_similarity: bool = False
     chemical_metric: str = "minmax"
 
-    consensus_method: str | None = None
-    consensus_weight_source: str = "rf_quality"
-    consensus_weight_power: float = 2.0
+    aggregation_metho: str | None = None
+    aggregation_weight_source: str = "rf_quality"
+    aggregation_weight_power: float = 2.0
 
-    consensus_selection: str = "top_n"
-    consensus_top_n: int = 20
-    consensus_score_delta: float = 0.2
+    aggregation_selection: str = "top_n"
+    aggregation_top_n: int = 20
+    aggregation_score_delta: float = 0.2
 
-    consensus_pool: int = 500
+    chemical_search_pool: int = 500
     exact_chemical_search: bool = False
 
     def __post_init__(self) -> None:
@@ -946,8 +946,8 @@ class QueryConfig:
             "classical_query_batch",
             "classical_n_jobs",
             "ef_search",
-            "consensus_top_n",
-            "consensus_pool",
+            "aggregation_top_n",
+            "chemical_search_pool",
         ):
             positive_int(
                 getattr(self, name),
@@ -1000,41 +1000,41 @@ class QueryConfig:
             )
 
         if (
-            self.consensus_method is not None
-            and self.consensus_method
-            not in CONSENSUS_METHODS
+            self.aggregation_metho is not None
+            and self.aggregation_metho
+            not in AGGREGATION_METHODS
         ):
             raise ValueError(
-                "consensus_method must be None or one of "
-                f"{CONSENSUS_METHODS}."
+                "aggregation_metho must be None or one of "
+                f"{AGGREGATION_METHODS}."
             )
 
         if (
-            self.consensus_weight_source
-            not in CONSENSUS_WEIGHT_SOURCES
+            self.aggregation_weight_source
+            not in AGGREGATION_WEIGHT_SOURCES
         ):
             raise ValueError(
-                "consensus_weight_source must be one of "
-                f"{CONSENSUS_WEIGHT_SOURCES}."
+                "aggregation_weight_source must be one of "
+                f"{AGGREGATION_WEIGHT_SOURCES}."
             )
 
         positive_finite(
-            self.consensus_weight_power,
-            "consensus_weight_power",
+            self.aggregation_weight_power,
+            "aggregation_weight_power",
         )
 
         if (
-            self.consensus_selection
-            not in CONSENSUS_SELECTION_METHODS
+            self.aggregation_selection
+            not in AGGREGATION_SELECTION_METHODS
         ):
             raise ValueError(
-                "consensus_selection must be one of "
-                f"{CONSENSUS_SELECTION_METHODS}."
+                "aggregation_selection must be one of "
+                f"{AGGREGATION_SELECTION_METHODS}."
             )
 
         finite(
-            self.consensus_score_delta,
-            "consensus_score_delta",
+            self.aggregation_score_delta,
+            "aggregation_score_delta",
         )
 
         available_scores = (
@@ -1043,24 +1043,24 @@ class QueryConfig:
         )
 
         if (
-            self.consensus_method is not None
-            and self.consensus_weight_source in METHODS
-            and self.consensus_weight_source
+            self.aggregation_metho is not None
+            and self.aggregation_weight_source in METHODS
+            and self.aggregation_weight_source
             not in available_scores
         ):
             raise ValueError(
-                "The spectral consensus_weight_source must either "
+                "The spectral aggregation_weight_source must either "
                 "retrieve candidates or be listed in "
                 "additional_top_n_scores."
             )
 
         if (
-            self.consensus_method == "centroid"
-            and self.consensus_pool
-            < self.consensus_top_n
+            self.aggregation_metho == "centroid"
+            and self.chemical_search_pool
+            < self.aggregation_top_n
         ):
             raise ValueError(
-                "consensus_pool must be >= consensus_top_n for "
+                "chemical_search_pool must be >= aggregation_top_n for "
                 "centroid consensus."
             )
 
