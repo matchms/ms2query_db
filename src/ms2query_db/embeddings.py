@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, Self
 
 import numpy as np
 
@@ -294,7 +294,7 @@ class MS2DeepScoreEmbedder:
             raise ValueError("batch_size must be a positive integer.")
 
         try:
-            dimension = int(getattr(scorer, "output_vector_dim"))
+            dimension = int(scorer.output_vector_dim)
         except (TypeError, ValueError, AttributeError) as exc:
             raise ContractError(
                 "MS2DeepScore scorer does not expose a valid output_vector_dim."
@@ -327,7 +327,7 @@ class MS2DeepScoreEmbedder:
         *,
         allow_legacy: bool = False,
         batch_size: int = DEFAULT_EMBEDDING_BATCH_SIZE,
-    ) -> "MS2DeepScoreEmbedder":
+    ) -> Self:
         """Load an MS2DeepScore model file and create an embedder.
 
         ``allow_legacy=False`` is intentionally the default.  If the installed
@@ -336,7 +336,7 @@ class MS2DeepScoreEmbedder:
         decision explicit.
         """
         if not isinstance(allow_legacy, bool):
-            raise ValueError("allow_legacy must be a boolean.")
+            raise TypeError("allow_legacy must be a boolean.")
 
         from ms2deepscore import MS2DeepScore
         from ms2deepscore.models import load_model
