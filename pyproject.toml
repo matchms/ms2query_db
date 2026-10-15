@@ -30,6 +30,8 @@ test = [
     "pytest>=8",
 ]
 
+[tool.uv.sources]
+matchms = { git = "https://github.com/matchms/matchms.git", branch = "development" }
 
 [project.scripts]
 ms2query-db = "ms2query_db.cli:main"
