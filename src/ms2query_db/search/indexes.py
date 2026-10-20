@@ -687,8 +687,11 @@ class NativeIndexStore:
 
                     del scores, matches
             finally:
+                # Large native/NumPy index arrays are released by reference counting.
+                # Avoid a full cyclic-GC sweep after every shard (using gc.collect()) since
+                # profiling showed that those forced collections dominate a substantial part
+                # of otherwise useful search time.
                 del index, ids
-                gc.collect()
 
         return best
 

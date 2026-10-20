@@ -26,8 +26,14 @@ from .util import jsonable, text_value
 class CandidateReranker(Protocol):
     """Protocol for learned candidate-quality rerankers.
 
-    A reranker receives all candidate rows for one query and returns one finite
-    quality estimate per row. The current RF models predict expected chemical
+    ``predict()`` receives the row-aligned candidate table for one *query
+    batch*. The table can therefore contain several ``query_index`` groups. A
+    reranker that uses query-relative features must compute those features
+    independently within each query group, but it should call the underlying
+    model once for the complete batch whenever possible.
+
+    The returned array must contain one finite quality estimate per input row in
+    exactly the same order. The current RF models predict expected chemical
     similarity in the interval [0, 1].
     """
 
@@ -65,7 +71,7 @@ class QueryEngine:
         ``process_collection()``.
     reranker
         Optional learned candidate reranker. Required when RF quality is used as
-        a consensus weight source.
+        an aggregation weight source.
 
     Notes
     -----
@@ -677,9 +683,28 @@ class QueryEngine:
                 row[f"score_{method}"] = float(score)
                 row[f"matches_{method}"] = matches
 
-    def _apply_reranker(self, rows: list[dict]) -> None:
-        """Attach learned RF-quality estimates to candidate rows when available."""
-        if self.reranker is None or not rows:
+    def _apply_reranker_batch(
+        self,
+        row_groups: Sequence[list[dict]],
+    ) -> None:
+        """Attach reranker estimates with one model call per query batch.
+
+        Candidate rows remain grouped by query for retrieval, complementary
+        scoring, and aggregation. Only the learned inference step is flattened:
+        every nonempty group is concatenated in stable query/candidate order,
+        passed to the reranker once, and then written back to the same row
+        objects. ``query_index`` remains present in the candidate frame so a
+        reranker can build query-relative features independently per group.
+        """
+        if self.reranker is None:
+            return
+
+        rows = [
+            row
+            for group in row_groups
+            for row in group
+        ]
+        if not rows:
             return
 
         frame = self._candidate_frame(rows)
@@ -700,6 +725,10 @@ class QueryEngine:
         values = np.clip(values, 0.0, 1.0)
         for row, value in zip(rows, values, strict=True):
             row["rf_quality"] = float(value)
+
+    def _apply_reranker(self, rows: list[dict]) -> None:
+        """Rerank one candidate group; retained for focused callers/tests."""
+        self._apply_reranker_batch([rows])
 
     @staticmethod
     def _candidate_frame(rows: list[dict]) -> pd.DataFrame:
@@ -831,6 +860,13 @@ class QueryEngine:
                 "Search backend returned unresolved spectrum IDs"
             )
 
+        pending: list[
+            tuple[SpectrumQueryResult, list[dict], list[dict], list[int]]
+        ] = []
+
+        # Build and fully score each query's candidate union first. Learned
+        # reranking is deliberately deferred until all query groups are ready so
+        # the model can evaluate the complete outer batch in one call.
         for query_row, position in enumerate(positions):
             result = results[position]
             result.query_ionmode = ionmodes[query_row]
@@ -863,8 +899,15 @@ class QueryEngine:
                     row["retrieved_by"]
                 )
 
-            self._apply_reranker(rows)
+            pending.append((result, rows, hits, ids))
 
+        self._apply_reranker_batch(
+            [rows for _, rows, _, _ in pending]
+        )
+
+        # Final result objects stay query-local. Aggregation is intentionally
+        # performed after batched reranking because RF quality can be its weight source.
+        for result, rows, hits, ids in pending:
             result.candidates = self._candidate_frame(rows)
             result.hits = pd.DataFrame(
                 hits,
