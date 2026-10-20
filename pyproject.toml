@@ -22,6 +22,7 @@ dependencies = [
     "scipy>=1.10",
     "SQLAlchemy>=2.0.30,<3",
     "psycopg[binary]>=3.2",
+    "onnxruntime",
 ]
 
 
