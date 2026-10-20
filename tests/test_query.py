@@ -486,3 +486,129 @@ def test_apply_aggregation_warns_on_empty_candidate_support(
     assert result.aggregation_method is None
     assert result.aggregation_weights == {}
     assert any("positive candidate weights" in warning for warning in result.warnings)
+
+
+def test_apply_reranker_batch_calls_predict_once_and_preserves_alignment(
+    monkeypatch, query_config_factory
+):
+    class AlignmentReranker:
+        def __init__(self):
+            self.frames = []
+
+        def predict(self, frame):
+            self.frames.append(frame.copy())
+            return frame["spectrum_id"].to_numpy(dtype=float) / 100.0
+
+    reranker = AlignmentReranker()
+    engine = make_engine(
+        monkeypatch,
+        query_config_factory,
+        reranker=reranker,
+    )
+
+    groups = [
+        [
+            {"query_index": 0, "spectrum_id": 10},
+            {"query_index": 0, "spectrum_id": 20},
+        ],
+        [],
+        [
+            {"query_index": 2, "spectrum_id": 30},
+        ],
+    ]
+
+    engine._apply_reranker_batch(groups)
+
+    assert len(reranker.frames) == 1
+    assert reranker.frames[0]["query_index"].tolist() == [0, 0, 2]
+    assert reranker.frames[0]["spectrum_id"].tolist() == [10, 20, 30]
+    assert [row["rf_quality"] for row in groups[0]] == [0.1, 0.2]
+    assert groups[1] == []
+    assert groups[2][0]["rf_quality"] == pytest.approx(0.3)
+
+
+def test_process_batch_invokes_reranker_once_for_all_query_groups(
+    monkeypatch, query_config_factory
+):
+    reranker = DummyReranker(values=(0.2, 0.8))
+    engine = make_engine(
+        monkeypatch,
+        query_config_factory,
+        config_overrides={"compute_chemical_similarity": False},
+        reranker=reranker,
+    )
+
+    collection = FakeCollection(["q0", "q1"])
+    processed = SimpleNamespace(
+        spectra=collection,
+        precursor_mz=np.asarray([100.0, 200.0]),
+        ionmodes=("positive", "positive"),
+    )
+
+    monkeypatch.setattr(
+        engine,
+        "_validate_query_annotations",
+        lambda records, results: (["raw0", "raw1"], [0, 1]),
+    )
+    monkeypatch.setattr(
+        engine,
+        "_process_queries",
+        lambda spectra, positions, results: (processed, [0, 1]),
+    )
+    monkeypatch.setattr(
+        engine,
+        "_compute_embeddings",
+        lambda *args, **kwargs: (
+            collection,
+            [0, 1],
+            processed.precursor_mz,
+            processed.ionmodes,
+            [np.asarray([1.0]), np.asarray([1.0])],
+        ),
+    )
+    monkeypatch.setattr(
+        engine,
+        "_retrieve",
+        lambda *args, **kwargs: {
+            "ms2deepscore": [
+                [{"spectrum_id": 10, "score": 0.9}],
+                [{"spectrum_id": 20, "score": 0.8}],
+            ]
+        },
+    )
+    monkeypatch.setattr(
+        engine,
+        "_candidate_rows",
+        lambda *, query_row, result, **kwargs: (
+            [
+                {
+                    "query_id": result.query_id,
+                    "query_index": result.query_index,
+                    "spectrum_id": 10 + 10 * query_row,
+                    "compound_id": 1 + query_row,
+                    "retrieved_by": ["ms2deepscore"],
+                }
+            ],
+            [],
+        ),
+    )
+    monkeypatch.setattr(engine, "_score_union", lambda **kwargs: None)
+    monkeypatch.setattr(engine, "_apply_aggregation", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "_candidate_frame",
+        lambda rows: pd.DataFrame(rows),
+    )
+
+    engine.database.get_candidates = lambda ids: {
+        10: {"compound_id": 1},
+        20: {"compound_id": 2},
+    }
+
+    records = [SimpleNamespace(index=0), SimpleNamespace(index=1)]
+    results = engine.process_batch(records)
+
+    assert len(reranker.frames) == 1
+    assert reranker.frames[0]["query_index"].tolist() == [0, 1]
+    assert results[0].candidates.iloc[0]["rf_quality"] == pytest.approx(0.2)
+    assert results[1].candidates.iloc[0]["rf_quality"] == pytest.approx(0.8)
