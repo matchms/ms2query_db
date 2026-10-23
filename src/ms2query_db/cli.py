@@ -19,6 +19,7 @@ from .api import (
     DEFAULT_INDEX_DIR,
     DEFAULT_SCHEMA,
     MS2QueryLibrary,
+    compute_visual_coordinates,
     create_library,
     doctor,
     library_statistics,
@@ -209,6 +210,59 @@ def parser() -> argparse.ArgumentParser:
     )
     _add_connection_arguments(diagnostics)
 
+    visual = commands.add_parser(
+        "visual-coordinates",
+        help="Compute Chemap UMAP coordinates for selected compounds.",
+    )
+    _add_connection_arguments(visual)
+
+    visual_selection = visual.add_mutually_exclusive_group()
+    visual_selection.add_argument(
+        "--all-compounds",
+        action="store_true",
+        help="Map every compound. Default: compounds with reference spectra.",
+    )
+    visual_selection.add_argument(
+        "--class",
+        dest="classes",
+        action="append",
+        metavar="NAME",
+        help=(
+            "Map compounds whose class exactly matches NAME. Repeat this option "
+            "to include multiple classes."
+        ),
+    )
+
+    visual.add_argument(
+        "--output",
+        help="Optional CSV path for selected compounds and visual_x/visual_y.",
+    )
+    visual.add_argument(
+        "--backend",
+        choices=("gpu", "cpu"),
+        default="gpu",
+        help="Chemap UMAP backend (default: gpu).",
+    )
+    visual.add_argument(
+        "--csv-only",
+        action="store_true",
+        help="Do not write visual_x/visual_y to PostgreSQL; requires --output.",
+    )
+    visual.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace visual coordinates already stored for selected compounds.",
+    )
+    visual.add_argument("--fp-size", type=int, default=4096)
+    visual.add_argument("--random-state", type=int, default=42)
+    visual.add_argument("--n-neighbors", type=int, default=100)
+    visual.add_argument("--min-dist", type=float, default=0.25)
+    visual.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="Disable Chemap fingerprint progress output.",
+    )
+
     return root
 
 
@@ -322,6 +376,44 @@ def _run_index(args, dsn: str) -> None:
     _print_json(counts)
 
 
+def _run_visual_coordinates(args, dsn: str) -> None:
+    if args.csv_only and not args.output:
+        raise ValueError("--csv-only requires --output.")
+
+    selection = (
+        args.classes
+        if args.classes
+        else "all" if args.all_compounds else "references"
+    )
+    result = compute_visual_coordinates(
+        dsn,
+        schema=args.schema or DEFAULT_SCHEMA,
+        selection=selection,
+        output_csv=args.output,
+        update_database=not args.csv_only,
+        overwrite=args.overwrite,
+        gpu=args.backend == "gpu",
+        fp_size=args.fp_size,
+        n_neighbors=args.n_neighbors,
+        min_dist=args.min_dist,
+        random_state=args.random_state,
+        show_progress=not args.no_progress,
+    )
+    _print_json(
+        {
+            "selection": selection,
+            "backend": args.backend,
+            "compounds": len(result),
+            "database_updated": not args.csv_only,
+            "output_csv": (
+                str(Path(args.output).expanduser().resolve())
+                if args.output
+                else None
+            ),
+        }
+    )
+
+
 def _run_query(args, dsn: str) -> None:
     config = _query_config(args)
 
@@ -394,6 +486,8 @@ def main(argv=None) -> int:
                     schema=args.schema or DEFAULT_SCHEMA,
                 )
             )
+        elif args.command == "visual-coordinates":
+            _run_visual_coordinates(args, dsn)
         else:  # pragma: no cover - argparse guarantees a known command.
             raise AssertionError(f"Unhandled command: {args.command}")
 
