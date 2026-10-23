@@ -17,6 +17,7 @@ import logging
 import re
 import uuid
 import zlib
+from collections.abc import Sequence
 from contextlib import contextmanager
 
 import numpy as np
@@ -24,6 +25,7 @@ from sqlalchemy import (
     Float,
     bindparam,
     create_engine,
+    exists,
     func,
     inspect,
     select,
@@ -905,6 +907,61 @@ class Database:
 
             yield rows
             last = rows[-1]["compound_id"]
+
+    def get_visualization_compounds(
+        self,
+        *,
+        reference_only: bool = False,
+        classes: Sequence[str] | None = None,
+    ) -> list[dict]:
+        """Return lightweight compound metadata for chemical-space visualization."""
+        if reference_only and classes is not None:
+            raise ValueError("reference_only and classes are mutually exclusive")
+
+        compounds = self.models.ReferenceCompound.__table__
+        spectra = self.models.ReferenceSpectrum.__table__
+
+        statement = select(
+            compounds.c.id,
+            compounds.c.identity_key,
+            compounds.c.inchikey,
+            compounds.c.smiles,
+            compounds.c.superclass,
+            compounds.c.compound_class,
+            compounds.c.subclass,
+            compounds.c.visual_x,
+            compounds.c.visual_y,
+        )
+
+        if reference_only:
+            statement = statement.where(
+                exists(
+                    select(1).where(
+                        spectra.c.compound_id == compounds.c.id
+                    )
+                )
+            )
+        elif classes is not None:
+            class_names = tuple(dict.fromkeys(classes))
+            if not class_names:
+                return []
+            statement = statement.where(
+                compounds.c.compound_class.in_(class_names)
+            )
+
+        statement = statement.order_by(compounds.c.id)
+
+        with self.engine.connect() as conn:
+            rows = conn.execute(statement).mappings().all()
+
+        result = []
+        for row in rows:
+            item = dict(row)
+            item["compound_id"] = int(item.pop("id"))
+            item["class"] = item.pop("compound_class")
+            result.append(item)
+
+        return result
 
     def _decode_compound(self, row) -> dict:
         """Convert a database compound row to the public decoded representation."""

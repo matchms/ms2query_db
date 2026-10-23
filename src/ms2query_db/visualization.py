@@ -40,41 +40,29 @@ def _normalize_selection(selection: VisualSelection) -> tuple[str, tuple[str, ..
     return "classes", tuple(item.strip() for item in classes)
 
 
-def _selected_compounds(database: Database, selection: VisualSelection) -> pd.DataFrame:
+def _selected_compounds(
+    database: Database,
+    selection: VisualSelection,
+) -> pd.DataFrame:
     """Load only the compound metadata needed for one UMAP calculation."""
     mode, classes = _normalize_selection(selection)
-    compounds = database.models.ReferenceCompound.__table__
-    spectra = database.models.ReferenceSpectrum.__table__
-
-    statement = select(
-        compounds.c.id.label("compound_id"),
-        compounds.c.identity_key,
-        compounds.c.inchikey,
-        compounds.c.smiles,
-        compounds.c.superclass,
-        compounds.c.compound_class.label("class"),
-        compounds.c.subclass,
-        compounds.c.visual_x,
-        compounds.c.visual_y,
-    )
 
     if mode == "references":
-        statement = statement.where(
-            exists(
-                select(1).where(spectra.c.compound_id == compounds.c.id)
-            )
+        rows = database.get_visualization_compounds(
+            reference_only=True,
         )
     elif mode == "classes":
-        statement = statement.where(compounds.c.compound_class.in_(classes))
-
-    statement = statement.order_by(compounds.c.id)
-
-    with database.engine.connect() as conn:
-        rows = conn.execute(statement).mappings().all()
+        rows = database.get_visualization_compounds(
+            classes=classes,
+        )
+    else:
+        rows = database.get_visualization_compounds()
 
     frame = pd.DataFrame(rows)
+
     if frame.empty:
         raise ValueError("The selected compound set is empty.")
+
     return frame
 
 
@@ -92,46 +80,6 @@ def _validate_coordinates(before: pd.DataFrame, after: pd.DataFrame) -> None:
     coordinates = after[["visual_x", "visual_y"]].to_numpy(dtype=np.float64)
     if coordinates.shape != (len(before), 2) or not np.isfinite(coordinates).all():
         raise ContractError("Chemap returned invalid visual_x/visual_y coordinates.")
-
-
-def _write_coordinates(
-    database: Database,
-    frame: pd.DataFrame,
-    *,
-    overwrite: bool,
-) -> None:
-    """Write one coherent coordinate set to selected compound rows atomically."""
-    compounds = database.models.ReferenceCompound.__table__
-
-    if not overwrite:
-        existing = frame["visual_x"].notna() | frame["visual_y"].notna()
-        if existing.any():
-            raise FileExistsError(
-                f"{int(existing.sum())} selected compound(s) already have visual "
-                "coordinates; pass overwrite=True to replace them."
-            )
-
-    rows = [
-        {
-            "_compound_id": int(row.compound_id),
-            "_visual_x": float(row.visual_x),
-            "_visual_y": float(row.visual_y),
-        }
-        for row in frame.itertuples(index=False)
-    ]
-
-    statement = (
-        update(compounds)
-        .where(compounds.c.id == bindparam("_compound_id"))
-        .values(
-            visual_x=bindparam("_visual_x"),
-            visual_y=bindparam("_visual_y"),
-        )
-    )
-
-    with database.engine.begin() as conn:
-        for block in chunks(rows, 1000):
-            conn.execute(statement, block)
 
 
 def compute_visual_coordinates(
@@ -254,7 +202,12 @@ def compute_visual_coordinates(
         _validate_coordinates(compounds, result)
 
         if update_database:
-            _write_coordinates(database, result, overwrite=overwrite)
+            database.update_visual_coordinates(
+                result[
+                    ["compound_id", "visual_x", "visual_y"]
+                ].to_dict("records"),
+                overwrite=overwrite,
+            )
 
         if output_csv is not None:
             path = Path(output_csv).expanduser().resolve()
