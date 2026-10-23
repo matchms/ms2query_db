@@ -1,4 +1,4 @@
-from .api import MS2QueryLibrary, compute_visual_coordinates, create_library
+from .api import MS2QueryLibrary, create_library
 from .config import (
     METHODS,
     BuildConfig,
@@ -8,6 +8,8 @@ from .config import (
     ScoringSpec,
 )
 from .results import BatchQueryResult, SpectrumQueryResult
+from .visualization import compute_visual_coordinates
+
 
 __all__ = [
     "METHODS",

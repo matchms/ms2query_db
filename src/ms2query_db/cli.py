@@ -19,13 +19,13 @@ from .api import (
     DEFAULT_INDEX_DIR,
     DEFAULT_SCHEMA,
     MS2QueryLibrary,
-    compute_visual_coordinates,
     create_library,
     doctor,
     library_statistics,
 )
 from .config import BuildConfig, QueryConfig
 from .util import jsonable
+from .visualization import compute_visual_coordinates
 
 logger = logging.getLogger(__name__)
 
