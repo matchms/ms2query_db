@@ -1,4 +1,4 @@
-from .api import MS2QueryLibrary, create_library
+from .api import MS2QueryLibrary, compute_visual_coordinates, create_library
 from .config import (
     METHODS,
     BuildConfig,
@@ -19,5 +19,6 @@ __all__ = [
     "QueryConfig",
     "ScoringSpec",
     "SpectrumQueryResult",
+    "compute_visual_coordinates",
     "create_library"
     ]

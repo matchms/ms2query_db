@@ -1,387 +1,266 @@
-"""Chemical-space visualization coordinates derived from reference compounds.
+"""Library-wide chemical-space coordinates for MS2Query-DB compounds."""
 
-The public operation in this module is deliberately library-level: UMAP coordinates
-are meaningful only when they are fitted to the complete compound collection.  The
-result is therefore computed once from all stored reference compounds and then
-written back to ``reference_compounds.visual_x``/``visual_y`` as derived metadata.
-"""
 from __future__ import annotations
 
-import inspect
-import os
-import tempfile
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import Literal
 
 import numpy as np
 import pandas as pd
+from sqlalchemy import bindparam, exists, select, update
 
-from .errors import CompatibilityError, ContractError
+from .config import BuildConfig
+from .db import Database
+from .errors import ContractError
+from .util import chunks
 
-_VISUAL_COLUMNS = (
-    "compound_id",
-    "identity_key",
-    "inchikey14",
-    "inchikey",
-    "smiles",
-    "inchi",
-    "formula",
-    "exact_mass",
-    "superclass",
-    "class",
-    "subclass",
-    "visual_x",
-    "visual_y",
-    "pubchem_cid",
-)
+VisualSelection = Literal["references", "all"] | Sequence[str]
 
 
-def _all_compounds(database, *, batch_size: int) -> pd.DataFrame:
-    """Materialize lightweight compound metadata in stable database-ID order."""
-    if isinstance(batch_size, bool) or not isinstance(batch_size, int) or batch_size < 1:
-        raise ValueError("batch_size must be a positive integer.")
+def _normalize_selection(selection: VisualSelection) -> tuple[str, tuple[str, ...] | None]:
+    """Return ``(mode, classes)`` for the public selection argument."""
+    if isinstance(selection, str):
+        if selection not in {"references", "all"}:
+            raise ValueError(
+                "selection must be 'references', 'all', or a non-empty sequence "
+                "of compound class names."
+            )
+        return selection, None
 
-    rows: list[dict[str, Any]] = []
-    for block in database.iter_visualization_compounds(batch_size=batch_size):
-        rows.extend(block)
-
-    if not rows:
-        raise ValueError("The library contains no reference compounds to visualize.")
-
-    frame = pd.DataFrame(rows)
-    if "compound_class" in frame.columns:
-        frame = frame.rename(columns={"compound_class": "class"})
-
-    required = {"compound_id", "smiles"}
-    missing = required - set(frame.columns)
-    if missing:
-        raise ContractError(
-            "Database visualization rows are missing required columns: "
-            f"{sorted(missing)}."
+    if not isinstance(selection, Sequence):
+        raise TypeError(
+            "selection must be 'references', 'all', or a sequence of class names."
         )
 
-    if frame["compound_id"].duplicated().any():
-        raise ContractError("Database returned duplicate compound IDs for visualization.")
-    if frame["smiles"].isna().any() or frame["smiles"].astype(str).str.len().eq(0).any():
-        raise ContractError("Reference compounds contain missing canonical SMILES.")
+    classes = tuple(dict.fromkeys(selection))
+    if not classes or any(not isinstance(item, str) or not item.strip() for item in classes):
+        raise ValueError("Class selection must contain non-empty strings.")
 
-    return frame.sort_values("compound_id", kind="stable").reset_index(drop=True)
+    return "classes", tuple(item.strip() for item in classes)
 
 
-def _rdkit_logcount_generator(*, fp_size: int):
-    """Return the folded RDKit path-fingerprint generator used for log-count UMAP."""
+def _selected_compounds(database: Database, selection: VisualSelection) -> pd.DataFrame:
+    """Load only the compound metadata needed for one UMAP calculation."""
+    mode, classes = _normalize_selection(selection)
+    compounds = database.models.ReferenceCompound.__table__
+    spectra = database.models.ReferenceSpectrum.__table__
+
+    statement = select(
+        compounds.c.id.label("compound_id"),
+        compounds.c.identity_key,
+        compounds.c.inchikey,
+        compounds.c.smiles,
+        compounds.c.superclass,
+        compounds.c.compound_class.label("class"),
+        compounds.c.subclass,
+        compounds.c.visual_x,
+        compounds.c.visual_y,
+    )
+
+    if mode == "references":
+        statement = statement.where(
+            exists(
+                select(1).where(spectra.c.compound_id == compounds.c.id)
+            )
+        )
+    elif mode == "classes":
+        statement = statement.where(compounds.c.compound_class.in_(classes))
+
+    statement = statement.order_by(compounds.c.id)
+
+    with database.engine.connect() as conn:
+        rows = conn.execute(statement).mappings().all()
+
+    frame = pd.DataFrame(rows)
+    if frame.empty:
+        raise ValueError("The selected compound set is empty.")
+    return frame
+
+
+def _validate_coordinates(before: pd.DataFrame, after: pd.DataFrame) -> None:
+    """Require Chemap to preserve compound rows and return finite coordinates."""
+    if len(after) != len(before):
+        raise ContractError("Chemap changed the compound row count during UMAP.")
+
+    if "compound_id" not in after or not np.array_equal(
+        after["compound_id"].to_numpy(),
+        before["compound_id"].to_numpy(),
+    ):
+        raise ContractError("Chemap changed compound row alignment during UMAP.")
+
+    coordinates = after[["visual_x", "visual_y"]].to_numpy(dtype=np.float64)
+    if coordinates.shape != (len(before), 2) or not np.isfinite(coordinates).all():
+        raise ContractError("Chemap returned invalid visual_x/visual_y coordinates.")
+
+
+def _write_coordinates(
+    database: Database,
+    frame: pd.DataFrame,
+    *,
+    overwrite: bool,
+) -> None:
+    """Write one coherent coordinate set to selected compound rows atomically."""
+    compounds = database.models.ReferenceCompound.__table__
+
+    if not overwrite:
+        existing = frame["visual_x"].notna() | frame["visual_y"].notna()
+        if existing.any():
+            raise FileExistsError(
+                f"{int(existing.sum())} selected compound(s) already have visual "
+                "coordinates; pass overwrite=True to replace them."
+            )
+
+    rows = [
+        {
+            "_compound_id": int(row.compound_id),
+            "_visual_x": float(row.visual_x),
+            "_visual_y": float(row.visual_y),
+        }
+        for row in frame.itertuples(index=False)
+    ]
+
+    statement = (
+        update(compounds)
+        .where(compounds.c.id == bindparam("_compound_id"))
+        .values(
+            visual_x=bindparam("_visual_x"),
+            visual_y=bindparam("_visual_y"),
+        )
+    )
+
+    with database.engine.begin() as conn:
+        for block in chunks(rows, 1000):
+            conn.execute(statement, block)
+
+
+def compute_visual_coordinates(
+    database_url: str,
+    *,
+    schema: str | None = None,
+    selection: VisualSelection = "references",
+    output_csv: str | Path | None = None,
+    update_database: bool = True,
+    overwrite: bool = False,
+    gpu: bool = True,
+    fp_size: int = 4096,
+    n_neighbors: int = 100,
+    min_dist: float = 0.25,
+    random_state: int | None = None,
+    show_progress: bool = True,
+) -> pd.DataFrame:
+    """Compute and optionally persist 2D chemical-space coordinates.
+
+    Parameters
+    ----------
+    database_url:
+        PostgreSQL connection URL for the MS2Query-DB library.
+    schema:
+        Library schema. Defaults to :class:`BuildConfig`'s schema.
+    selection:
+        Which compounds to map:
+
+        - ``"references"``: compounds that have at least one reference spectrum;
+        - ``"all"``: every compound in ``reference_compounds``;
+        - sequence of strings: compounds whose ``compound_class`` exactly matches
+          one of the supplied class names.
+    output_csv:
+        Optional CSV path. The exported rows are exactly the compounds used for
+        the UMAP calculation, including ``compound_id``, structure/class metadata,
+        and the newly computed ``visual_x``/``visual_y`` values.
+    update_database:
+        If true, write the coordinates to ``reference_compounds``.
+    overwrite:
+        If false, database writing fails when any selected row already has a
+        visual coordinate. If true, coordinates for all selected rows are
+        replaced. This flag has no effect when ``update_database=False``.
+    gpu:
+        Use Chemap's cuML GPU UMAP implementation. If false, use the CPU UMAP
+        implementation with cosine distance so CPU and GPU runs use the same
+        fingerprint representation and distance family.
+    fp_size:
+        Size of the folded RDKit path fingerprint.
+    n_neighbors, min_dist, random_state:
+        UMAP settings forwarded to Chemap.
+    show_progress:
+        Forwarded to Chemap fingerprint computation.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The selected compounds with newly computed ``visual_x`` and ``visual_y``.
+
+    Notes
+    -----
+    The chemical-space representation is intentionally fixed here to a folded
+    RDKit count fingerprint followed by ``log1p`` scaling and cosine UMAP. This
+    keeps the MS2Query-DB visualization definition small and reproducible while
+    leaving lower-level fingerprint/UMAP flexibility in Chemap itself.
+    """
     if isinstance(fp_size, bool) or not isinstance(fp_size, int) or fp_size < 1:
         raise ValueError("fp_size must be a positive integer.")
 
+    from chemap import FingerprintConfig
+    from chemap.plotting import create_chem_space_umap, create_chem_space_umap_gpu
     from rdkit.Chem import rdFingerprintGenerator
 
-    return rdFingerprintGenerator.GetRDKitFPGenerator(fpSize=fp_size)
+    database = Database(database_url, schema or BuildConfig().schema)
+    try:
+        database.open()
+        compounds = _selected_compounds(database, selection)
 
+        # Fail before the expensive UMAP calculation when a non-overwrite DB
+        # write cannot succeed anyway.
+        if update_database and not overwrite:
+            existing = compounds["visual_x"].notna() | compounds["visual_y"].notna()
+            if existing.any():
+                raise FileExistsError(
+                    f"{int(existing.sum())} selected compound(s) already have visual "
+                    "coordinates; pass overwrite=True to replace them."
+                )
 
-def _supported_argument(parameters, *names: str) -> str | None:
-    for name in names:
-        if name in parameters:
-            return name
-    return None
-
-
-def _chemap_logcount_kwargs(function, *, fpgen) -> dict[str, Any]:
-    """Build fingerprint kwargs for a chemap UMAP helper without silent downgrade.
-
-    Chemap's plotting API has evolved while the project has been young.  We inspect
-    the installed callable so MS2Query-DB can use either a dedicated fingerprint
-    configuration argument or explicit count/transform arguments.  Crucially, this
-    helper refuses to silently fall back to binary fingerprints: the requested
-    representation is folded RDKit *log-count* fingerprints.
-    """
-    parameters = inspect.signature(function).parameters
-    kwargs: dict[str, Any] = {}
-
-    fpgen_name = _supported_argument(parameters, "fpgen", "fingerprint_generator")
-    if fpgen_name is None:
-        raise CompatibilityError(
-            "Installed chemap UMAP helper does not accept an RDKit fingerprint "
-            "generator. Upgrade chemap to a version exposing fpgen=... ."
-        )
-    kwargs[fpgen_name] = fpgen
-
-    config_name = _supported_argument(
-        parameters,
-        "fp_config",
-        "fingerprint_config",
-    )
-    if config_name is not None:
-        from chemap import FingerprintConfig
-
-        kwargs[config_name] = FingerprintConfig(
+        fpgen = rdFingerprintGenerator.GetRDKitFPGenerator(fpSize=fp_size)
+        fingerprint_config = FingerprintConfig(
             count=True,
             folded=True,
             return_csr=False,
             invalid_policy="raise",
         )
-    else:
-        count_name = _supported_argument(
-            parameters,
-            "count",
-            "fp_count",
-            "fingerprint_count",
-        )
-        if count_name is not None:
-            kwargs[count_name] = True
 
-        folded_name = _supported_argument(
-            parameters,
-            "folded",
-            "fp_folded",
-            "fingerprint_folded",
-        )
-        if folded_name is not None:
-            kwargs[folded_name] = True
+        kwargs = {
+            "col_smiles": "smiles",
+            "inplace": False,
+            "x_col": "visual_x",
+            "y_col": "visual_y",
+            "fpgen": fpgen,
+            "fingerprint_config": fingerprint_config,
+            "show_progress": show_progress,
+            "scaling": "log1p",
+            "n_neighbors": n_neighbors,
+            "min_dist": min_dist,
+            "umap_random_state": random_state,
+        }
 
-    transform_name = _supported_argument(
-        parameters,
-        "value_transform",
-        "fp_value_transform",
-        "fingerprint_value_transform",
-        "transform",
-    )
-    log_flag_name = _supported_argument(
-        parameters,
-        "logcount",
-        "log_count",
-        "log_counts",
-    )
-
-    if transform_name is not None:
-        kwargs[transform_name] = "log1p"
-    elif log_flag_name is not None:
-        kwargs[log_flag_name] = True
-    else:
-        doc = (inspect.getdoc(function) or "").lower()
-        # Some chemap releases define log-count as the plotting helper's fixed
-        # representation and therefore expose no transform parameter.  Only trust
-        # that behavior when the callable documents it explicitly.
-        if not ("log" in doc and "count" in doc):
-            raise CompatibilityError(
-                "Installed chemap UMAP helper does not expose or document a "
-                "log-count fingerprint transform. MS2Query-DB will not silently "
-                "compute different visualization fingerprints; upgrade chemap."
+        if gpu:
+            result = create_chem_space_umap_gpu(compounds, **kwargs)
+        else:
+            result = create_chem_space_umap(
+                compounds,
+                distance_function="cosine",
+                n_jobs=-1,
+                **kwargs,
             )
 
-    return kwargs
+        _validate_coordinates(compounds, result)
 
+        if update_database:
+            _write_coordinates(database, result, overwrite=overwrite)
 
-def _run_chemap_umap(
-    compounds: pd.DataFrame,
-    *,
-    backend: str,
-    fp_size: int,
-    random_state: int | None,
-    umap_kwargs: dict[str, Any] | None,
-    umap_function=None,
-) -> pd.DataFrame:
-    """Run the selected chemap UMAP helper and validate row-preserving output."""
-    if backend not in {"gpu", "cpu"}:
-        raise ValueError("backend must be 'gpu' or 'cpu'.")
+        if output_csv is not None:
+            path = Path(output_csv).expanduser().resolve()
+            path.parent.mkdir(parents=True, exist_ok=True)
+            result.to_csv(path, index=False)
 
-    if umap_function is None:
-        from chemap.plotting import (
-            create_chem_space_umap,
-            create_chem_space_umap_gpu,
-        )
-
-        function = (
-            create_chem_space_umap_gpu
-            if backend == "gpu"
-            else create_chem_space_umap
-        )
-    else:
-        function = umap_function
-
-    fpgen = _rdkit_logcount_generator(fp_size=fp_size)
-    parameters = inspect.signature(function).parameters
-    kwargs: dict[str, Any] = {
-        "col_smiles": "smiles",
-        "inplace": False,
-        "x_col": "visual_x",
-        "y_col": "visual_y",
-    }
-    kwargs = {
-        key: value
-        for key, value in kwargs.items()
-        if key in parameters
-    }
-    kwargs.update(_chemap_logcount_kwargs(function, fpgen=fpgen))
-
-    if "metric" in parameters:
-        # GPU chemap currently supports cosine for this path.  Keeping the same
-        # default for CPU makes the two backends represent the same geometry.
-        kwargs["metric"] = "cosine"
-    if random_state is not None and "random_state" in parameters:
-        kwargs["random_state"] = int(random_state)
-
-    for key, value in (umap_kwargs or {}).items():
-        if key not in parameters:
-            raise TypeError(
-                f"Installed chemap {function.__name__}() does not accept {key!r}."
-            )
-        if key in {
-            "col_smiles",
-            "inplace",
-            "x_col",
-            "y_col",
-            "fpgen",
-            "fingerprint_generator",
-            "metric",
-        }:
-            raise ValueError(f"UMAP argument {key!r} is managed by MS2Query-DB.")
-        kwargs[key] = value
-
-    result = function(compounds.copy(), **kwargs)
-    if not isinstance(result, pd.DataFrame):
-        raise ContractError(
-            f"Chemap {function.__name__}() returned {type(result).__name__}; "
-            "expected a pandas DataFrame."
-        )
-    if len(result) != len(compounds):
-        raise ContractError(
-            "Chemap changed compound row count while computing visualization "
-            f"coordinates: {len(compounds)} -> {len(result)}."
-        )
-
-    if "compound_id" not in result.columns:
-        raise ContractError("Chemap output lost compound_id row provenance.")
-
-    expected_ids = compounds["compound_id"].to_numpy(dtype=np.int64)
-    actual_ids = result["compound_id"].to_numpy(dtype=np.int64)
-    if not np.array_equal(actual_ids, expected_ids):
-        raise ContractError(
-            "Chemap changed compound row order while computing visualization coordinates."
-        )
-
-    if "visual_x" not in result.columns or "visual_y" not in result.columns:
-        raise ContractError(
-            "Chemap output does not contain the requested visual_x/visual_y columns."
-        )
-
-    coordinates = result[["visual_x", "visual_y"]].to_numpy(dtype=np.float64)
-    if coordinates.shape != (len(compounds), 2) or not np.isfinite(coordinates).all():
-        raise ContractError("Chemap produced missing or nonfinite UMAP coordinates.")
-
-    output = result.copy()
-    output["visual_x"] = coordinates[:, 0]
-    output["visual_y"] = coordinates[:, 1]
-    return output
-
-
-def _export_csv(frame: pd.DataFrame, path: str | Path) -> Path:
-    """Atomically export visualization rows as a CSV file."""
-    output = Path(path).expanduser().resolve()
-    output.parent.mkdir(parents=True, exist_ok=True)
-
-    suffix = ".tmp"
-    handle = tempfile.NamedTemporaryFile(
-        mode="w",
-        encoding="utf-8",
-        newline="",
-        suffix=suffix,
-        prefix=f".{output.name}.",
-        dir=output.parent,
-        delete=False,
-    )
-    temporary = Path(handle.name)
-    handle.close()
-    try:
-        frame.to_csv(temporary, index=False)
-        os.replace(temporary, output)
+        return result
     finally:
-        temporary.unlink(missing_ok=True)
-    return output
-
-
-def compute_library_visual_coordinates(
-    database,
-    *,
-    output_csv: str | Path | None = None,
-    backend: str = "gpu",
-    overwrite: bool = False,
-    fp_size: int = 4096,
-    random_state: int | None = 42,
-    batch_size: int = 5000,
-    umap_kwargs: dict[str, Any] | None = None,
-    umap_function=None,
-) -> pd.DataFrame:
-    """Compute, persist, optionally export, and return chemical-space coordinates.
-
-    Parameters
-    ----------
-    database
-        Open :class:`~ms2query_db.db.Database` for a ready library.
-    output_csv
-        Optional path receiving one CSV row per reference compound.
-    backend
-        ``"gpu"`` (default) uses chemap's ``create_chem_space_umap_gpu``;
-        ``"cpu"`` uses ``create_chem_space_umap``.
-    overwrite
-        Replace already populated ``visual_x``/``visual_y`` values.  The default
-        is ``False`` because these are intended as one-time derived library data.
-    fp_size
-        Folded RDKit path-fingerprint size.  The representation is count-based
-        with a ``log1p`` transform and cosine UMAP distance.
-    random_state
-        Reproducibility seed when supported by the installed chemap helper.
-    batch_size
-        Database read batch size. UMAP still materializes all lightweight
-        compound rows in memory because it is fitted globally.
-    umap_kwargs
-        Additional keyword arguments accepted by the selected chemap helper,
-        for example ``n_neighbors`` or ``min_dist``.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Compound metadata plus finite ``visual_x`` and ``visual_y`` columns.
-    """
-    if not isinstance(overwrite, bool):
-        raise TypeError("overwrite must be a boolean.")
-
-    # Coordinate fitting and persistence are one library-wide writer operation.
-    # The advisory lock also prevents two expensive UMAP jobs from racing and
-    # letting the last writer silently replace the first result.
-    with database.build_lock():
-        compounds = _all_compounds(database, batch_size=batch_size)
-
-        if not overwrite:
-            already_visualized = compounds[
-                compounds["visual_x"].notna()
-                | compounds["visual_y"].notna()
-            ]
-            if not already_visualized.empty:
-                preview = already_visualized["compound_id"].tolist()[:10]
-                raise FileExistsError(
-                    "Visualization coordinates already exist for compound IDs "
-                    f"{preview}; pass overwrite=True to recompute the complete "
-                    "library."
-                )
-
-        embedded = _run_chemap_umap(
-            compounds,
-            backend=backend,
-            fp_size=fp_size,
-            random_state=random_state,
-            umap_kwargs=umap_kwargs,
-            umap_function=umap_function,
-        )
-
-        database.update_visual_coordinates(
-            embedded[["compound_id", "visual_x", "visual_y"]].to_dict("records"),
-            overwrite=overwrite,
-        )
-
-    columns = [column for column in _VISUAL_COLUMNS if column in embedded.columns]
-    result = embedded.reindex(columns=columns).copy()
-
-    if output_csv is not None:
-        _export_csv(result, output_csv)
-
-    return result
+        database.close()
